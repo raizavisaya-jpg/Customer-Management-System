@@ -1,13 +1,19 @@
-# React + Vite
+# Customer Management System (CMS)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A Customer Management System built with React, Vite, Tailwind CSS, and Supabase.
 
-Currently, two official plugins are available:
+## Sprint 1
+Project scaffold initialized with:
+- React 18
+- Vite
+- Tailwind CSS
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Branching Strategy
+- main → production branch
+- dev → development branch
+- feature/* → feature branches
 
-## React Compiler
+## Setup Instructions
 
 The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
