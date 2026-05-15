@@ -1,6 +1,5 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
-
 const AuthContext = createContext({});
 
 export const AuthProvider = ({ children }) => {
@@ -26,30 +25,35 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const checkSession = async () => {
-      setLoading(true);
+      try {
+        setLoading(true);
 
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
 
-      if (error) {
-        console.error("Session error:", error.message);
+        if (error) {
+          console.error("Session error:", error.message);
+          setUser(null);
+          setProfile(null);
+          return;
+        }
+
+        if (session?.user) {
+          setUser(session.user);
+          await fetchProfile(session.user.id);
+        } else {
+          setUser(null);
+          setProfile(null);
+        }
+      } catch (err) {
+        console.error("Auth error:", err);
         setUser(null);
         setProfile(null);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      if (session?.user) {
-        setUser(session.user);
-        await fetchProfile(session.user.id);
-      } else {
-        setUser(null);
-        setProfile(null);
-      }
-
-      setLoading(false);
     };
 
     checkSession();
@@ -57,22 +61,28 @@ export const AuthProvider = ({ children }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setLoading(true);
+      try {
+        setLoading(true);
 
-      if (session?.user) {
-        setUser(session.user);
-        await fetchProfile(session.user.id);
-
-      } else {
+        if (session?.user) {
+          setUser(session.user);
+          await fetchProfile(session.user.id);
+        } else {
+          setUser(null);
+          setProfile(null);
+        }
+      } catch (err) {
+        console.error("Auth state change error:", err);
         setUser(null);
         setProfile(null);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     });
 
-    checkSession();
-    return () => listener?.subscription.unsubscribe();
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, []);
 
   return (
