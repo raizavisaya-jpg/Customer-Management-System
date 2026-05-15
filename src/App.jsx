@@ -1,40 +1,43 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import AuthCallbackPage from './pages/AuthCallbackPage';
-import AppShell from './layouts/AppShell';
+import React from 'react';
+import Login from './Login';
+import { useAuth } from './contexts/AuthContext';
+import { supabase } from './SupabaseClient'; // <--- THIS WAS MISSING
 
-// Placeholder pages for Sprint 2
-function PlaceholderPage({ title }) {
+function App() {
+  const { user, profile, loading } = useAuth();
+
+  // 1. Loading State
+  if (loading) {
+    return (
+      <div style={{ color: 'white', textAlign: 'center', marginTop: '20%' }}>
+        Loading...
+      </div>
+    );
+  }
+
+  // 2. Dashboard State (Logged in and ACTIVE)
+  if (user && profile?.record_status === 'ACTIVE') {
+    return (
+      <div className="App" style={{ color: 'white', padding: '20px', textAlign: 'center' }}>
+        <h1>Customer Management System</h1>
+        <p>Welcome back, <strong>{user.email}</strong>!</p>
+        <p>Status: <span style={{ color: '#4ade80', fontWeight: 'bold' }}>{profile.record_status}</span></p>
+        <button 
+          style={{ marginTop: '10px', padding: '8px 16px', cursor: 'pointer' }}
+          onClick={() => supabase.auth.signOut()}
+        >
+          Sign Out
+        </button>
+      </div>
+    );
+  }
+
+  // 3. Login State (Not logged in or profile not found)
   return (
-    <div className="flex items-center justify-center h-64">
-      <h1 className="text-2xl font-semibold text-gray-400">{title} — Coming Soon</h1>
+    <div className="App">
+      <Login />
     </div>
   );
 }
 
-export default function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/auth/callback" element={<AuthCallbackPage />} />
-
-        {/* Protected routes (AppShell wraps all authenticated pages) */}
-        <Route path="/" element={<AppShell />}>
-          <Route index element={<Navigate to="/customers" replace />} />
-          <Route path="customers" element={<PlaceholderPage title="Customers" />} />
-          <Route path="sales" element={<PlaceholderPage title="Sales" />} />
-          <Route path="products" element={<PlaceholderPage title="Products" />} />
-          <Route path="admin" element={<PlaceholderPage title="Admin" />} />
-          <Route path="deleted-customers" element={<PlaceholderPage title="Deleted Customers" />} />
-        </Route>
-
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </BrowserRouter>
-  );
-}
+export default App;
