@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
@@ -14,6 +14,8 @@ import AppShell from "./layouts/AppShell.jsx";
 import { supabase } from "./lib/supabaseClient";
 
 function App() {
+  const navigate = useNavigate();
+
   async function handleGoogleLogin() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -40,10 +42,16 @@ function App() {
       return;
     }
 
-    window.location.href = "/customers";
+    navigate("/customers");
   }
 
-  async function handleEmailRegister({ email, password, firstName, lastName, username }) {
+  async function handleEmailRegister({
+    email,
+    password,
+    firstName,
+    lastName,
+    username,
+  }) {
     const { error } = await supabase.auth.signUp({
       email,
       password,
