@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 
 import LoginPage from "./pages/LoginPage.jsx";
@@ -119,7 +119,7 @@ function App() {
 }
 
 export default App;
-=======
+
 import React from 'react';
 import Login from './Login';
 import { useAuth } from './contexts/AuthContext';
@@ -163,4 +163,4 @@ function App() {
 }
 
 export default App;
->>>>>>> origin/dev
+
