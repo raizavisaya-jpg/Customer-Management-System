@@ -122,7 +122,6 @@ function App() {
 import React from 'react';
 import Login from './Login';
 import { useAuth } from './contexts/AuthContext';
-import { supabase } from './SupabaseClient'; // <--- THIS WAS MISSING
 
 function App() {
   const { user, profile, loading } = useAuth();
