@@ -10,11 +10,11 @@
 
 | Member | Role |
 |---|---|
-| M1 | Project Lead / Lead Developer |
-| M2 | Frontend Developer |
-| M3 | Database Specialist |
-| M4 | Rights & Authentication Specialist |
-| M5 | QA / Documentation Specialist |
+| Raiza M. Visaya | Project Lead / Lead Developer |
+| Jedric Gabriel H. Dela Cruz | Frontend Developer |
+| Joepimme Antonn F. Querubin | Database Specialist |
+| Johann Riel S. Esquejo | Rights & Authentication Specialist |
+| Tristan Jay R. Alejandro | QA / Documentation Specialist |
 
 ---
 
