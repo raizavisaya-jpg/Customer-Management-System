@@ -11,7 +11,7 @@ import AuthCallback from "./pages/auth-callback.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import AppShell from "./layouts/AppShell.jsx";
 
-import { supabase } from "./lib/supabaseClient";
+import { supabase } from "./lib/SupabaseClient";
 
 function App() {
   const navigate = useNavigate();
