@@ -1,5 +1,5 @@
 import React from "react";
-import { supabase } from "./SupabaseClient";
+import { supabase } from "./lib/SupabaseClient";
 
 const Login = () => {
   const handleGoogleLogin = async () => {
