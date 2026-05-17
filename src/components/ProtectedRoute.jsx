@@ -1,49 +1,42 @@
-import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { supabase } from "../lib/supabaseClient";
+import { useAuth } from "../contexts/AuthContext"; 
+import { useRights } from "../contexts/UserRightsContext";
 
-export default function ProtectedRoute({ children }) {
-  const [session, setSession] = useState(undefined);
+export default function ProtectedRoute({ children, requiredRight }) {
   const location = useLocation();
+  const { user, profile, loading: authLoading } = useAuth();
+  const { hasRight, loading: rightsLoading } = useRights();
 
-  useEffect(() => {
-    let mounted = true;
-
-    async function checkSession() {
-      const { data, error } = await supabase.auth.getSession();
-
-      if (!mounted) return;
-
-      if (error) {
-        console.error("ProtectedRoute error:", error.message);
-        setSession(null);
-      } else {
-        setSession(data.session);
-      }
-    }
-
-    checkSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (mounted) {
-        setSession(session);
-      }
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  if (session === undefined) {
-    return <p>Loading...</p>;
+  // 1. If contexts are still processing data, keep spinner running
+  if (authLoading || rightsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
   }
 
-  if (!session) {
+  // 2. Not logged into a Supabase auth account? Kick to login screen
+  if (!user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  // 3. SECURITY GATE: Logged in, but no database profile exists yet? 
+  if (!profile) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // 4. Suspended account check
+  if (profile.record_status !== "ACTIVE") {
+    return <Navigate to="/login" replace />;
+  }
+
+  // 5. Sprint Permission Guard: If they lack the required security permission, block access
+  if (requiredRight && !hasRight(requiredRight)) {
+    if (requiredRight === "CUST_VIEW" || !hasRight("CUST_VIEW")) {
+      return <Navigate to="/login" replace />;
+    }
+    return <Navigate to="/customers" replace />;
   }
 
   return children;
