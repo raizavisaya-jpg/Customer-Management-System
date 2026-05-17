@@ -1,16 +1,76 @@
-# React + Vite
+# Customer Management System (CMS)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A web-based Customer Management System built for Hope, Inc. to manage customer records, sales transactions, product listings, user roles, authentication, and access control.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Project Status
 
-## React Compiler
+This project is currently in Sprint 1, Weeks 1–2.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Completed
 
-## Expanding the ESLint configuration
+- React + Vite project scaffold
+- Tailwind CSS configuration
+- Supabase JS client setup
+- React Router setup
+- ProtectedRoute structure
+- Login page
+- Register page
+- AppShell layout
+- Placeholder pages for:
+  - `/customers`
+  - `/sales`
+  - `/products`
+  - `/admin`
+  - `/deleted-customers`
+  - `/auth/callback`
+- AuthContext setup
+- Email sign up and sign in setup
+- Google OAuth setup
+- Initial QA testing environment using Vitest
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Pending / Ongoing
+
+- Final database integration testing
+- Final Google OAuth validation
+- User rights testing
+- Soft-delete visibility testing
+- View-only enforcement testing
+- Final manual QA validation
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React + Vite |
+| Styling | Tailwind CSS |
+| Routing | React Router |
+| Backend / Auth | Supabase |
+| Testing | Vitest, jsdom, React Testing Library |
+| Version Control | Git and GitHub |
+
+---
+
+## Branching Strategy
+
+The project follows this branching strategy:
+
+| Branch | Purpose |
+|---|---|
+| `main` | Stable / production-ready branch |
+| `dev` | Development branch |
+| `feature/*` | Feature branches |
+| `test/sprint1-auth-flows` | QA authentication test branch |
+| `docs/sprint1-log-readme` | Documentation branch |
+
+---
+
+## Installation and Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone <repository-link>
