@@ -1,106 +1,41 @@
-import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { supabase } from "../lib/SupabaseClient";
+import { useAuth } from "../contexts/AuthContext"; 
+import { useRights } from "../contexts/UserRightsContext";
 
-export default function ProtectedRoute({ children }) {
-  const [session, setSession] = useState(undefined);
-  const [profile, setProfile] = useState(null);
-  const [checking, setChecking] = useState(true);
+export default function ProtectedRoute({ children, requiredRight }) {
   const location = useLocation();
+  const { user, profile, loading: authLoading } = useAuth();
+  const { hasRight, loading: rightsLoading } = useRights();
 
-  async function getProfile(userId) {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("record_status, user_type")
-      .eq("id", userId)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Profile fetch error:", error.message);
-      return null;
-    }
-
-    return data;
+  // 1. If contexts are still processing data, keep spinner running
+  if (authLoading || rightsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
   }
 
-  useEffect(() => {
-    let mounted = true;
-
-    async function checkSession() {
-      setChecking(true);
-
-      const { data, error } = await supabase.auth.getSession();
-
-      if (!mounted) return;
-
-      if (error) {
-        console.error("ProtectedRoute error:", error.message);
-        setSession(null);
-        setProfile(null);
-        setChecking(false);
-        return;
-      }
-
-      const currentSession = data.session;
-      setSession(currentSession);
-
-      if (currentSession?.user?.id) {
-        const profileData = await getProfile(currentSession.user.id);
-
-        if (!mounted) return;
-
-        setProfile(profileData);
-      } else {
-        setProfile(null);
-      }
-
-      setChecking(false);
-    }
-
-    checkSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
-      if (!mounted) return;
-
-      setChecking(true);
-      setSession(newSession);
-
-      if (newSession?.user?.id) {
-        const profileData = await getProfile(newSession.user.id);
-
-        if (!mounted) return;
-
-        setProfile(profileData);
-      } else {
-        setProfile(null);
-      }
-
-      setChecking(false);
-    });
-
-    return () => {
-      mounted = false;
-      subscription?.unsubscribe();
-    };
-  }, []);
-
-  if (checking || session === undefined) {
-    return <p>Loading...</p>;
-  }
-
-  if (!session) {
+  // 2. Not logged into a Supabase auth account? Kick to login screen
+  if (!user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  if (profile?.record_status && profile.record_status !== "ACTIVE") {
+  // 3. SECURITY GATE: Logged in, but no database profile exists yet? 
+  if (!profile) {
     return <Navigate to="/login" replace />;
   }
 
-  const userType = profile?.user_type || "USER";
+  // 4. Suspended account check
+  if (profile.record_status !== "ACTIVE") {
+    return <Navigate to="/login" replace />;
+  }
 
-  if (location.pathname === "/deleted-customers" && userType === "USER") {
+  // 5. Sprint Permission Guard: If they lack the required security permission, block access
+  if (requiredRight && !hasRight(requiredRight)) {
+    if (requiredRight === "CUST_VIEW" || !hasRight("CUST_VIEW")) {
+      return <Navigate to="/login" replace />;
+    }
     return <Navigate to="/customers" replace />;
   }
 

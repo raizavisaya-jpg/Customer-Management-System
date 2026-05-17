@@ -100,6 +100,9 @@ function App() {
 
       <Route path="/auth/callback" element={<AuthCallback />} />
 
+      {/* ONE MAIN SECURITY GATE: Protects the shell and checks sub-permissions 
+        internally without stacking multiple guard layers.
+      */}
       <Route
         element={
           <ProtectedRoute>
@@ -107,11 +110,47 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/customers" element={<Customers />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/sales" element={<Sales />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/deleted-customers" element={<DeletedCustomers />} />
+        {/* SPRINT 2 PERMISSION PAGES */}
+        <Route 
+          path="/customers" 
+          element={
+            <ProtectedRoute requiredRight="CUST_VIEW">
+              <Customers />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/products" 
+          element={
+            <ProtectedRoute requiredRight="VIEW_PRODUCTS">
+              <Products />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/sales" 
+          element={
+            <ProtectedRoute requiredRight="VIEW_SALES">
+              <Sales />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute requiredRight="VIEW_ADMIN">
+              <Admin />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/deleted-customers" 
+          element={
+            <ProtectedRoute requiredRight="CUST_DEL">
+              <DeletedCustomers />
+            </ProtectedRoute>
+          } 
+        />
       </Route>
     </Routes>
   );

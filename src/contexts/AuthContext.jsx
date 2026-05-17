@@ -8,19 +8,26 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId) => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("record_status, user_type")
-      .eq("id", userId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("record_status, user_type")
+        .eq("id", userId)
+        .maybeSingle(); // 👈 Safely handles 0 rows or timing gaps without crashing the app
 
-    if (error) {
-      console.error("Profile fetch error:", error.message);
+      if (error) {
+        console.error("Profile fetch error:", error.message);
+        setProfile(null);
+        return null;
+      }
+
+      setProfile(data);
+      return data;
+    } catch (err) {
+      console.error("Failed to run profile fetch exception:", err);
       setProfile(null);
-      return;
+      return null;
     }
-
-    setProfile(data);
   };
 
   useEffect(() => {
@@ -52,7 +59,7 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setProfile(null);
       } finally {
-        setLoading(false);
+        setLoading(false); // 👈 Guaranteed to unfreeze the app now
       }
     };
 
@@ -76,7 +83,7 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setProfile(null);
       } finally {
-        setLoading(false);
+        setLoading(false); // 👈 Guaranteed to unfreeze the app now
       }
     });
 
