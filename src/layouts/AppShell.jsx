@@ -1,32 +1,23 @@
 import { useState } from 'react';
 import { NavLink, useNavigate, Outlet } from 'react-router-dom';
-import { useRights } from '../contexts/UserRightsContext'; 
 
 const navLinks = [
   { to: '/customers', label: 'Customers' },
   { to: '/sales', label: 'Sales' },
   { to: '/products', label: 'Products' },
-  { to: '/admin', label: 'Admin', requiredRight: 'VIEW_ADMIN' },
-  { to: '/deleted-customers', label: 'Deleted Customers', requiredRight: 'CUST_VIEW_DELETED' },
+  { to: '/admin', label: 'Admin' },
+  // TODO Sprint 2: hide Deleted Customers for USER role
+  { to: '/deleted-customers', label: 'Deleted Customers' },
 ];
 
 export default function AppShell({ currentUser, onLogout }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
-  const { hasRight } = useRights(); 
 
   async function handleLogout() {
     if (onLogout) await onLogout();
     navigate('/login');
   }
-
-  // Filter the links dynamically based on the user's permissions
-  const visibleLinks = navLinks.filter(link => {
-    if (link.requiredRight) {
-      return hasRight(link.requiredRight);
-    }
-    return true; 
-  });
 
   const displayName =
     currentUser?.username ||
@@ -79,7 +70,7 @@ export default function AppShell({ currentUser, onLogout }) {
           md:translate-x-0 md:static md:block
         `}>
           <nav className="flex flex-col gap-1 p-3 pt-4">
-            {visibleLinks.map(({ to, label }) => (
+            {navLinks.map(({ to, label }) => (
               <NavLink
                 key={to}
                 to={to}

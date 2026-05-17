@@ -1,159 +1,87 @@
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import AuthCallbackPage from './pages/AuthCallbackPage';
+import AppShell from './layouts/AppShell';
+import CustomerListPage from './pages/CustomerListPage';
+import CustomerDetailPage from './pages/CustomerDetailPage';
+import ProductCataloguePage from './pages/ProductCataloguePage';
+import DeletedCustomersPage from './pages/DeletedCustomersPage';
 
-import LoginPage from "./pages/LoginPage.jsx";
-import RegisterPage from "./pages/RegisterPage.jsx";
-import Customers from "./pages/customers.jsx";
-import Products from "./pages/products.jsx";
-import Sales from "./pages/sales.jsx";
-import Admin from "./pages/admin.jsx";
-import DeletedCustomers from "./pages/deleted-customers.jsx";
-import AuthCallback from "./pages/auth-callback.jsx";
-import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import AppShell from "./layouts/AppShell.jsx";
-
-import { supabase } from "./lib/SupabaseClient";
-
-function App() {
-  const navigate = useNavigate();
-
-  async function handleGoogleLogin() {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: "http://localhost:5173/auth/callback",
-      },
-    });
-
-    if (error) {
-      console.error("Google login error:", error.message);
-      alert(error.message);
-    }
-  }
-
-  async function handleEmailLogin(email, password) {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      console.error("Email login error:", error.message);
-      alert(error.message);
-      return;
-    }
-
-    navigate("/customers");
-  }
-
-  async function handleEmailRegister({
-    email,
-    password,
-    firstName,
-    lastName,
-    username,
-  }) {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: "http://localhost:5173/auth/callback",
-        data: {
-          first_name: firstName,
-          last_name: lastName,
-          username: username,
-        },
-      },
-    });
-
-    if (error) {
-      console.error("Register error:", error.message);
-      alert(error.message);
-      throw error;
-    }
-
-    alert("Account created! Please check your email.");
-  }
-
+function PlaceholderPage({ title }) {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-
-      <Route
-        path="/login"
-        element={
-          <LoginPage
-            onEmailLogin={handleEmailLogin}
-            onGoogleLogin={handleGoogleLogin}
-          />
-        }
-      />
-
-      <Route
-        path="/register"
-        element={
-          <RegisterPage
-            onEmailRegister={handleEmailRegister}
-            onGoogleRegister={handleGoogleLogin}
-          />
-        }
-      />
-
-      <Route path="/auth/callback" element={<AuthCallback />} />
-
-      {/* ONE MAIN SECURITY GATE: Protects the shell and checks sub-permissions 
-        internally without stacking multiple guard layers.
-      */}
-      <Route
-        element={
-          <ProtectedRoute>
-            <AppShell />
-          </ProtectedRoute>
-        }
-      >
-        {/* SPRINT 2 PERMISSION PAGES */}
-        <Route 
-          path="/customers" 
-          element={
-            <ProtectedRoute requiredRight="CUST_VIEW">
-              <Customers />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/products" 
-          element={
-            <ProtectedRoute requiredRight="VIEW_PRODUCTS">
-              <Products />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/sales" 
-          element={
-            <ProtectedRoute requiredRight="VIEW_SALES">
-              <Sales />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin" 
-          element={
-            <ProtectedRoute requiredRight="VIEW_ADMIN">
-              <Admin />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/deleted-customers" 
-          element={
-            <ProtectedRoute requiredRight="CUST_DEL">
-              <DeletedCustomers />
-            </ProtectedRoute>
-          } 
-        />
-      </Route>
-    </Routes>
+    <div className="flex items-center justify-center h-64">
+      <h1 className="text-2xl font-semibold text-gray-400">{title} — Coming Soon</h1>
+    </div>
   );
 }
 
-export default App;
+// Mock data using correct DB format: custno VARCHAR(5), payterm CHECK('COD','30D','45D')
+const mockCustomers = [
+  { custno: 'C0001', custname: 'Juan dela Cruz', address: 'Quezon City', payterm: 'COD', record_status: 'ACTIVE', stamp: 'jdelacruz|2025-01-10' },
+  { custno: 'C0002', custname: 'Maria Santos', address: 'Makati City', payterm: '30D', record_status: 'ACTIVE', stamp: 'msantos|2025-01-11' },
+  { custno: 'C0003', custname: 'Pedro Reyes', address: 'Pasig City', payterm: '45D', record_status: 'ACTIVE', stamp: 'preyes|2025-01-12' },
+];
+
+const mockSales = [
+  {
+    transNo: 'TR000001', salesDate: '2025-01-10', empNo: 'E0001',
+    items: [
+      { description: 'Ballpen Black', quantity: 2, unitPrice: 12.00 },
+      { description: 'Notebook A4', quantity: 1, unitPrice: 55.00 },
+    ],
+  },
+  {
+    transNo: 'TR000002', salesDate: '2025-02-14', empNo: 'E0002',
+    items: [
+      { description: 'Folder Long', quantity: 5, unitPrice: 18.50 },
+    ],
+  },
+];
+
+const mockProducts = [
+  { prodCode: 'AK0001', description: 'Ballpen Black', unit: 'pc', unitPrice: 12.00 },
+  { prodCode: 'AK0002', description: 'Notebook A4', unit: 'pc', unitPrice: 55.00 },
+  { prodCode: 'AK0003', description: 'Folder Long', unit: 'pc', unitPrice: 18.50 },
+];
+
+const mockDeletedCustomers = [
+  { custno: 'C0004', custname: 'Ana Gomez', stamp: 'agomez|2025-03-01|DELETED' },
+  { custno: 'C0005', custname: 'Luis Torres', stamp: 'ltorres|2025-03-05|DELETED' },
+];
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+
+        <Route path="/" element={<AppShell />}>
+          <Route index element={<Navigate to="/customers" replace />} />
+          <Route path="customers" element={
+            <CustomerListPage
+              customers={mockCustomers}
+              rights={{ CUST_ADD: true, CUST_EDIT: true, CUST_DEL: true }}
+              userType="SUPERADMIN"
+            />
+          } />
+          <Route path="customers/:custno" element={
+            <CustomerDetailPage customers={mockCustomers} sales={mockSales} />
+          } />
+          <Route path="products" element={
+            <ProductCataloguePage products={mockProducts} />
+          } />
+          <Route path="deleted-customers" element={
+            <DeletedCustomersPage deletedCustomers={mockDeletedCustomers} />
+          } />
+          <Route path="sales" element={<PlaceholderPage title="Sales" />} />
+          <Route path="admin" element={<PlaceholderPage title="Admin" />} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
