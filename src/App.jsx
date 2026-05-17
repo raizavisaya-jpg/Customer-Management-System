@@ -1,122 +1,120 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+
+import LoginPage from "./pages/LoginPage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
+import Customers from "./pages/customers.jsx";
+import Products from "./pages/products.jsx";
+import Sales from "./pages/sales.jsx";
+import Admin from "./pages/admin.jsx";
+import DeletedCustomers from "./pages/deleted-customers.jsx";
+import AuthCallback from "./pages/auth-callback.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import AppShell from "./layouts/AppShell.jsx";
+
+import { supabase } from "./lib/SupabaseClient";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const navigate = useNavigate();
+
+  async function handleGoogleLogin() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: "http://localhost:5173/auth/callback",
+      },
+    });
+
+    if (error) {
+      console.error("Google login error:", error.message);
+      alert(error.message);
+    }
+  }
+
+  async function handleEmailLogin(email, password) {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      console.error("Email login error:", error.message);
+      alert(error.message);
+      return;
+    }
+
+    navigate("/customers");
+  }
+
+  async function handleEmailRegister({
+    email,
+    password,
+    firstName,
+    lastName,
+    username,
+  }) {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: "http://localhost:5173/auth/callback",
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+          username: username,
+        },
+      },
+    });
+
+    if (error) {
+      console.error("Register error:", error.message);
+      alert(error.message);
+      throw error;
+    }
+
+    alert("Account created! Please check your email.");
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
 
-      <div className="ticks"></div>
+      <Route
+        path="/login"
+        element={
+          <LoginPage
+            onEmailLogin={handleEmailLogin}
+            onGoogleLogin={handleGoogleLogin}
+          />
+        }
+      />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <Route
+        path="/register"
+        element={
+          <RegisterPage
+            onEmailRegister={handleEmailRegister}
+            onGoogleRegister={handleGoogleLogin}
+          />
+        }
+      />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <Route path="/auth/callback" element={<AuthCallback />} />
+
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppShell />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/customers" element={<Customers />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/sales" element={<Sales />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/deleted-customers" element={<DeletedCustomers />} />
+      </Route>
+    </Routes>
+  );
 }
 
-export default App
+export default App;
