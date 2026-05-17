@@ -42,20 +42,22 @@ export function UserRightsProvider({ children }) {
       const userType = profile?.user_type?.toUpperCase();
       let assignedRights = [];
 
-      if (userType === "SUPERADMIN" || userType === "ADMIN") {
+      if (userType === "SUPERADMIN") {
+        // Top Tier: Absolute system visibility + Full CRUD management
         assignedRights = Object.values(ALL_RIGHTS);
-      } else if (userType === "SALES_MANAGER") {
+      } else if (userType === "ADMIN") {
+        // Middle Tier (Old Sales Manager): Hides "Admin" sidebar link, but allows opening "Deleted Customers"
         assignedRights = [
           ALL_RIGHTS.CUST_VIEW,
-          ALL_RIGHTS.CUST_ADD,
-          ALL_RIGHTS.CUST_EDIT,
-          ALL_RIGHTS.CUST_VIEW_DELETED,
+          ALL_RIGHTS.CUST_VIEW_DELETED, // Allows seeing /deleted-customers in sidebar
           ALL_RIGHTS.VIEW_SALES,
           ALL_RIGHTS.VIEW_SALES_DETAIL,
           ALL_RIGHTS.VIEW_PRODUCTS,
           ALL_RIGHTS.VIEW_PRICE_HISTORY,
+          // ALL_RIGHTS.VIEW_ADMIN is removed here so they cannot see the Admin sidebar link!
         ];
       } else if (userType === "USER") {
+        // Lowest Tier: Standard read-only access, completely hidden administrative blocks
         assignedRights = [
           ALL_RIGHTS.CUST_VIEW,
           ALL_RIGHTS.VIEW_SALES,
