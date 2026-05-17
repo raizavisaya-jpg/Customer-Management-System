@@ -8,6 +8,7 @@ const ALL_RIGHTS = {
   CUST_ADD: "CUST_ADD",
   CUST_EDIT: "CUST_EDIT",
   CUST_DEL: "CUST_DEL",
+  CUST_VIEW_DELETED: "CUST_VIEW_DELETED",
   VIEW_SALES: "VIEW_SALES",
   VIEW_SALES_DETAIL: "VIEW_SALES_DETAIL",
   VIEW_PRODUCTS: "VIEW_PRODUCTS",
@@ -22,32 +23,33 @@ export function UserRightsProvider({ children }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // 1. If Auth is still loading its session, match its loading status and wait
-    if (authLoading) {
+    // 1. Keep loading true if Auth is loading OR if user exists but profile is still fetching
+    if (authLoading || (user && !profile)) {
       setLoading(true);
       return;
     }
 
-    // 2. If Auth finished loading and there's no active session, drop loading immediately
-    if (!user || !profile) {
+    // 2. Only stop loading and clear rights if there's genuinely no authenticated user session
+    if (!user) {
       setRights([]);
       setLoading(false);
       return;
     }
 
-    // 3. If we have a user and profile, process the rights map cleanly
+    // 3. Process the rights map cleanly once user and profile are completely loaded
     try {
       setError(null);
-      const userType = profile.user_type?.toUpperCase();
+      const userType = profile?.user_type?.toUpperCase();
       let assignedRights = [];
 
-      if (userType === "SUPERADMIN") {
+      if (userType === "SUPERADMIN" || userType === "ADMIN") {
         assignedRights = Object.values(ALL_RIGHTS);
       } else if (userType === "SALES_MANAGER") {
         assignedRights = [
           ALL_RIGHTS.CUST_VIEW,
           ALL_RIGHTS.CUST_ADD,
           ALL_RIGHTS.CUST_EDIT,
+          ALL_RIGHTS.CUST_VIEW_DELETED,
           ALL_RIGHTS.VIEW_SALES,
           ALL_RIGHTS.VIEW_SALES_DETAIL,
           ALL_RIGHTS.VIEW_PRODUCTS,
@@ -69,10 +71,9 @@ export function UserRightsProvider({ children }) {
       setError(err.message);
       setRights([]);
     } finally {
-      // 4. Force state update confirmation
       setLoading(false);
     }
-  }, [user, profile, authLoading]);
+  }, [user?.id, profile?.user_type, authLoading]);
 
   const value = useMemo(
     () => ({
